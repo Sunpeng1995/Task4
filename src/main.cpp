@@ -8,6 +8,7 @@
 
 #include "Camera.h"
 #include "Shader.h"
+#include "Model.h"
 #include "Utils.h"
 
 const int screen_width = 1280;
@@ -55,6 +56,9 @@ int main() {
     Shader normalmap_shader("res/shader/normal.vs", "res/shader/normal.fs");
     Shader normalmap_shader_in_tangent("res/shader/normal_tangent.vs", "res/shader/normal_tangent.fs");
     Camera camera(screen_width, screen_height);
+
+    Model bunny("res/models/bunny/bunny.obj");
+    Shader bunny_shader("res/shader/bunny.vs", "res/shader/bunny.fs");
 
     // Render loop
     while (!glfwWindowShouldClose(window)) {
@@ -118,6 +122,23 @@ int main() {
         glBindVertexArray(cube_with_tangent_VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
+
+        bunny_shader.use();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, -0.5f, 0.0f));
+        model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+        //model = glm::rotate(model, (float)glfwGetTime() * 0.3f, glm::vec3(0.0f, 1.0f, 0.0f));
+        bunny_shader.setMat4("model", model);
+        bunny_shader.setMat4("view", camera.GetViewMatrix());
+        bunny_shader.setMat4("projection", camera.GetProjectionMatrix());
+        bunny_shader.setVec3("view_position", camera.GetPosition());
+
+        bunny_shader.setVec3("light_direction", glm::vec3(0.3f, 0.0f, -1.0f));
+        bunny_shader.setVec3("light_ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+        bunny_shader.setVec3("light_diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+        bunny_shader.setVec3("light_specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
+        bunny.draw(&bunny_shader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
